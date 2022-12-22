@@ -1,5 +1,10 @@
 import { Component } from '@angular/core';
-import { FormGroup, FormControl, Validators } from '@angular/forms';
+import {
+  FormGroup,
+  FormControl,
+  Validators,
+  ValidationErrors,
+} from '@angular/forms';
 import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
 
@@ -28,14 +33,18 @@ export class SigninComponent {
   constructor(private authService: AuthService, private router: Router) {}
 
   onSubmit() {
-    if (this.authForm.invalid) {
+    if (
+      this.authForm.invalid &&
+      this.authForm.controls.username === null &&
+      this.authForm.controls.password === null
+    ) {
       return;
     }
 
     this.authService
       .signin({
-        username: this.authForm.controls.username.value!,
-        password: this.authForm.controls.password.value!,
+        username: this.authForm.controls.username.value,
+        password: this.authForm.controls.password.value,
       })
       .subscribe({
         next: () => {
@@ -49,5 +58,16 @@ export class SigninComponent {
           }
         },
       });
+  }
+
+  returnFormErrors(): String | null {
+    if (this.authForm.errors !== null) {
+      if (this.authForm.errors['credentials']) {
+        return 'Invalid username or password';
+      } else if (this.authForm.errors['unknownError']) {
+        return 'Unknown error';
+      }
+    }
+    return null;
   }
 }

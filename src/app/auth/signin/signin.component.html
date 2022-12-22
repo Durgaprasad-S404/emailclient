@@ -11,8 +11,9 @@
     [control]="authForm.controls['password']"
   ></app-input>
   <div *ngIf="authForm.errors" class="ui red basic label">
-    <p *ngIf="authForm.errors!['credentials']">Invalid username or password</p>
-    <p *ngIf="authForm.errors!['unknownError']">Unknown error</p>
+    <div *ngIf="returnFormErrors() !== null">
+      <p>{{ returnFormErrors() }}</p>
+    </div>
   </div>
   <div>
     <button class="ui submit button primary">Submit</button>

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { SignupCredentials } from '../signup_credentials';
 import { SigninCredentials } from '../signin_credentials';
 import { BehaviorSubject, tap, Observable } from 'rxjs';
+import { EndpointsService } from '../endpoints.service';
 
 interface SignupResponse {
   username: string;
@@ -21,15 +22,14 @@ interface SigninResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  rootUrl: string = 'https://api.angular-email.com';
-  signedin$: BehaviorSubject<any> = new BehaviorSubject(null);
+  signedin$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   username: string = '';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private endpoints: EndpointsService) {}
 
   usernameAvailable(username: string): Observable<{ available: boolean }> {
     return this.http.post<{ available: boolean }>(
-      this.rootUrl + '/auth/username',
+      this.endpoints.usernameAvailable,
       {
         username: username,
       }
@@ -38,7 +38,7 @@ export class AuthService {
 
   signup(credentials: SignupCredentials): Observable<SignupResponse> {
     return this.http
-      .post<SignupResponse>(this.rootUrl + '/auth/signup', credentials)
+      .post<SignupResponse>(this.endpoints.signup, credentials)
       .pipe(
         tap((response) => {
           this.signedin$.next(true);
@@ -48,18 +48,16 @@ export class AuthService {
   }
 
   checkAuth(): Observable<SignedinResponse> {
-    return this.http
-      .get<SignedinResponse>(this.rootUrl + '/auth/signedin')
-      .pipe(
-        tap(({ authenticated, username }) => {
-          this.signedin$.next(authenticated);
-          this.username = username;
-        })
-      );
+    return this.http.get<SignedinResponse>(this.endpoints.checkAuth).pipe(
+      tap(({ authenticated, username }) => {
+        this.signedin$.next(authenticated);
+        this.username = username;
+      })
+    );
   }
 
   signout(): Observable<Object> {
-    return this.http.post(this.rootUrl + '/auth/signout', {}).pipe(
+    return this.http.post(this.endpoints.signout, {}).pipe(
       tap(() => {
         this.signedin$.next(false);
       })
@@ -68,7 +66,7 @@ export class AuthService {
 
   signin(credentials: SigninCredentials): Observable<Object> {
     return this.http
-      .post<SignedinResponse>(this.rootUrl + '/auth/signin', credentials)
+      .post<SignedinResponse>(this.endpoints.signin, credentials)
       .pipe(
         tap(({ username }) => {
           this.signedin$.next(true);

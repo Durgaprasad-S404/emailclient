@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormControl, ValidationErrors } from '@angular/forms';
 
 @Component({
   selector: 'app-input',
@@ -14,7 +14,7 @@ export class InputComponent {
 
   constructor() {}
 
-  showErrors() {
+  showErrors(): false | ValidationErrors | null {
     const { dirty, touched, errors } = this.control;
     return dirty && touched && errors;
   }
